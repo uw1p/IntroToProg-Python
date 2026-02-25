@@ -5,6 +5,7 @@
 #   RRoot,1/1/2030,Created Script
 #   DS,2/21/2026,Edited Script
 #   DS,2/22/2026,Added Structured Error Handling
+#   DS,2/24/2026,Corrected error handling for name entry.
 # ------------------------------------------------------------------------------------------ #
 
 # TODO: Import the json
@@ -38,7 +39,7 @@ try:
     file = open(FILE_NAME, "r")
     students = json.load(file)
 except FileNotFoundError as e:
-    print(f"{FILE_NAME} not found.")
+    print(f"{FILE_NAME} not found. No data imported. File will be created on save.")
 except Exception as e:
     print(f"There was an error opening the file {FILE_NAME}.")
     print(e,e.__doc__) # Why was the __doc__ text purple in the class video but not here?
@@ -62,19 +63,18 @@ while (True):
             student_first_name = input("Enter the student's first name: ")
             if not student_first_name.isalpha(): #This is a bad assumption for names.
                 raise ValueError("First name must only contain letters.")
-        except ValueError as e:
-            print("Invalid first name entry. Continuing.")
-        try:
             student_last_name = input("Enter the student's last name: ")
             if not student_last_name.isalpha(): #Also a bad assumption.
                 raise ValueError("Last name must only contain letters.")
+            else:
+                course_name = input("Please enter the name of the course: ")
+                student_data = {"FirstName": student_first_name, "LastName": student_last_name,
+                                "CourseName": course_name}
+                students.append(student_data)
+                print(f"You have registered {student_first_name} {student_last_name} for {course_name}.")
+                continue
         except ValueError as e:
-            print("Invalid last name entry. Continuing.")
-        course_name = input("Please enter the name of the course: ")
-        student_data = {"FirstName": student_first_name, "LastName": student_last_name, "CourseName": course_name}
-        students.append(student_data)
-        print(f"You have registered {student_first_name} {student_last_name} for {course_name}.")
-        continue
+            print(f"Invalid name entry. {e} Continuing.")
 
     # Present the current data
     elif menu_choice == "2":
@@ -91,19 +91,16 @@ while (True):
         try:
             file = open(FILE_NAME, "w")
             json.dump(students, file)
-            print("The following data was saved to file!")
+            print(f"The following data was saved to file {FILE_NAME}")
             print("student first name, student last name, course name")  # need to print headers
             for student in students:
                 print(f"{student['FirstName']}, {student['LastName']}, {student['CourseName']}")
-        except FileNotFoundError as e: #In case the file was deleted while the program was running.
-            print(f"{FILE_NAME} not found.")
         except Exception as e:
             print(f"There was an error opening the file {FILE_NAME}.")
             print(e, e.__doc__)
         finally:
             if file is not None and file.closed == False:
                 file.close()
-
         continue
 
     # Stop the loop
